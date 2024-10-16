@@ -8,3 +8,4 @@ setup(
 	author="Milkeyyy",
 	packages=find_packages(),
 	requires=["httpx"]
+)
