@@ -1,1 +1,3 @@
-from r6sss.main import *
+from .comparison import *
+from .functions import *
+from .types import *

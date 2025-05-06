@@ -1,12 +1,6 @@
 import datetime
 from enum import Enum
 
-import httpx
-
-from r6sss._logger import logger
-
-
-_API_URL = "https://api-r6sss.milkeyyy.com/v2/status"
 
 class Platform(Enum):
 	"""プラットフォーム"""
@@ -14,16 +8,16 @@ class Platform(Enum):
 	PC = "PC"
 	PS4 = "PS4"
 	PS5 = "PS5"
-	XB1 = "XBOXONE"
-	XBSX = "XBOX SERIES X"
+	XB1 = "XB1"
+	XBSX = "XBSX"
 
 class Status():
 	"""サーバーステータス"""
 
-	_platform: str
+	_platform: Platform
 	_data: dict
 
-	def __init__(self, platform, data) -> None:
+	def __init__(self, platform: Platform, data: dict) -> None:
 		self._platform = platform
 		self._data = data
 
@@ -43,7 +37,7 @@ class Status():
 		return self._data.copy()
 
 	@property
-	def platform(self) -> str:
+	def platform(self) -> Platform:
 		"""プラットフォーム"""
 		return self._platform
 
@@ -94,56 +88,3 @@ class Status():
 		]
 
 		return ";".join(texts)
-
-def get_server_status(platform: Platform) -> Status | None:
-	"""指定されたプラットフォームのサーバーステータスを取得して返す"""
-
-	if platform is None:
-		params = None
-	else:
-		params = {"platform": platform.value}
-
-	# サーバーステータスを取得
-	result = httpx.get(
-		_API_URL,
-		params=params
-	)
-	result_json = result.json()
-	if result.status_code != 200:
-		logger.error("サーバーステータスの取得に失敗")
-		if "detail" in result_json:
-			logger.error("- %s %s", str(result.status_code), result.json()["detail"])
-		return None
-
-	status = result.json()["data"]
-
-	return Status(platform.value, status[platform.value])
-
-def get_server_status_list(platforms: list[Platform] | None = None) -> list[Status] | None:
-	"""指定されたプラットフォームのサーバーステータスの一覧を取得して返す"""
-
-	if platforms is None:
-		params = None
-	else:
-		params = {"platform": [p.value for p in platforms]}
-
-	# サーバーステータスを取得
-	result = httpx.get(
-		_API_URL,
-		params=params
-	)
-	result_json = result.json()
-	if result.status_code != 200:
-		logger.error("サーバーステータスの取得に失敗")
-		if "detail" in result_json:
-			logger.error("- %s %s", str(result.status_code), result.json()["detail"])
-		return None
-
-	status = result.json()["data"]
-
-	status_list = []
-
-	for _platform, _status in status.items():
-		status_list.append(Status(_platform, _status))
-
-	return status_list
