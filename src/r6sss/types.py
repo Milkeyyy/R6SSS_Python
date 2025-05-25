@@ -76,6 +76,18 @@ class Status():
 		return _d
 
 	@property
+	def features(self) -> dict[str, str]:
+		"""稼働状況の辞書"""
+
+		table = {
+			"authentication": self.authentication,
+			"matchmaking": self.matchmaking,
+			"purchase": self.purchase
+		}
+
+		return table
+
+	@property
 	def text(self) -> str:
 		"""すべてのステータスを文字列にして結合したもの"""
 
