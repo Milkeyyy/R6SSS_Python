@@ -18,7 +18,8 @@ def get_server_status(platforms: list[Platform] | None = None) -> list[Status] |
 	# サーバーステータスを取得
 	result = httpx.get(
 		_API_URL,
-		params=params
+		params=params,
+		timeout=7
 	)
 	result_json = result.json()
 	if result.status_code != 200:
