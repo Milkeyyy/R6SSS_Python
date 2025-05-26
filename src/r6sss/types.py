@@ -9,7 +9,7 @@ class Platform(Enum):
 	PS4 = "PS4"
 	PS5 = "PS5"
 	XB1 = "XB1"
-	XBSX = "XBSX/S"
+	XBSX = "XBSX"
 
 class Status():
 	"""サーバーステータス"""
