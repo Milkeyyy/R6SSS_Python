@@ -140,7 +140,7 @@ class MaintenanceSchedule():
 	@property
 	def patchnotes(self) -> str | None:
 		"""パッチノートのURL"""
-		return self._get_data("Patchnotes")
+		return self._get_data("PatchNotes")
 
 	@property
 	def platforms(self) -> list[Platform]:
