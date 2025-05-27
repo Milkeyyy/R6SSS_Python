@@ -127,7 +127,10 @@ class MaintenanceSchedule():
 		i._data["Downtime"] = downtime
 		i._data["Date"] = date
 		i._data["PatchNotes"] = patchnotes
-		i._data["Platforms"] = platforms
+		if set(platforms).issubset(set(list(Platform))):
+			i._data["Platforms"] = [{"Name": "All"}]
+		else:
+			i._data["Platforms"] = [{"Name": pf.name} for pf in platforms]
 		return i
 
 	def _get_data(self, key: str):
