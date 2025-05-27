@@ -43,7 +43,7 @@ def get_server_status(platforms: list[Platform] | None = None) -> list[Status] |
 
 	return status_list
 
-def get_maintenance_schedule() -> list[MaintenanceSchedule]:
+def get_maintenance_schedule() -> MaintenanceSchedule | None:
 	"""メンテナンスのスケジュール情報を取得して返す"""
 
 	# メンテナンススケジュールを取得
@@ -57,13 +57,13 @@ def get_maintenance_schedule() -> list[MaintenanceSchedule]:
 		logger.error("メンテナンススケジュールの取得に失敗")
 		if "detail" in result_json:
 			logger.error("- %s %s", str(result.status_code), result.json()["detail"])
-		return []
+		return None
 
 	schedule = result_json.get("data")
 
 	if not schedule:
 		logger.error("メンテナンススケジュールの取得に失敗")
 		logger.error("- 'data' is None")
-		return []
+		return None
 
 	return schedule
