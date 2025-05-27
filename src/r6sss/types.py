@@ -121,6 +121,36 @@ class MaintenanceSchedule():
 		}
 
 	@classmethod
+	def convert_to_dict_platform_list(cls, platforms: list[Platform]) -> list[dict[str, str]]:
+		"""プラットフォーム列挙値のリストをAPIから返ってくるものと同じ辞書形式へ変換する"""
+
+		result = []
+
+		if set(platforms).issuperset(set(list(Platform))):
+			# 全プラットフォーム
+			result = [{"Name": "All"}]
+		else:
+			result = [{"Name": pf.name} for pf in platforms]
+
+		return result
+
+	@classmethod
+	def convert_to_enum_platform_list(cls, platforms: list[dict[str, str]]) -> list[Platform]:
+		"""プラットフォームの辞書を列挙値のリストへ変換する"""
+
+		result = []
+
+		for pf in platforms:
+			# プラットフォーム名が All の場合は全プラットフォームをリストへ入れる
+			if pf["Name"] == "All":
+				result = list(Platform)
+			# 名前をもとに生成した Enum をリストへ入れる
+			else:
+				result.append(Platform[pf["Name"]])
+
+		return result
+
+	@classmethod
 	def create(cls,
 		title: str,
 		detail: str,
@@ -136,11 +166,7 @@ class MaintenanceSchedule():
 		i._data["Timestamp"] = date.timestamp()
 		i._data["Date"] = date.isoformat()
 		i._data["PatchNotes"] = patchnotes
-		if set(platforms).issuperset(set(list(Platform))):
-			i._data["Platforms"] = [{"Name": "All"}]
-		else:
-			i._data["Platforms"] = [{"Name": pf.name} for pf in platforms]
-		return i
+		i._data["Platforms"] = cls.convert_to_dict_platform_list(platforms)
 
 	def _get_data(self, key: str):
 		return self._data[key]
@@ -176,13 +202,7 @@ class MaintenanceSchedule():
 		result = []
 		platform_list: list[dict[str, str]] | None = self._get_data("Platforms")
 		if platform_list:
-			for pf in platform_list:
-				# プラットフォーム名が All の場合は全プラットフォームをリストへ入れる
-				if pf["Name"] == "All":
-					result = list(Platform)
-				# 名前をもとに生成した Enum をリストへ入れる
-				else:
-					result.append(Platform[pf["Name"]])
+			result = self.convert_to_enum_platform_list(platform_list)
 		return result
 
 	def db_json(self) -> str:
@@ -199,11 +219,7 @@ class MaintenanceSchedule():
 			raw["Date"] = self.date.isoformat()
 
 		# プラットフォーム一覧
-		# 全プラットフォームの場合は専用の値
-		if set(self.platforms).issuperset(set(list(Platform))):
-			raw["Platforms"] = [{"Name": "All"}]
-		else:
-			raw["Platforms"] = [{"Name": pf.name} for pf in self.platforms]
+		raw["Platforms"] = self.convert_to_dict_platform_list(self.platforms)
 
 		# その他項目
 		raw["Result"] = True
