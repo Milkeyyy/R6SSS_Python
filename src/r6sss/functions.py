@@ -33,6 +33,6 @@ def get_server_status(platforms: list[Platform] | None = None) -> list[Status] |
 	status_list = []
 
 	for _platform, _status in status.items():
-		status_list.append(Status(Platform(_platform), _status))
+		status_list.append(Status(Platform[_platform], _status))
 
 	return status_list
