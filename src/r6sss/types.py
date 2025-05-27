@@ -125,7 +125,8 @@ class MaintenanceSchedule():
 		i._data["Title"] = title
 		i._data["Detail"] = detail
 		i._data["Downtime"] = downtime
-		i._data["Date"] = date
+		i._data["Timestamp"] = date.timestamp()
+		i._data["Date"] = date.isoformat()
 		i._data["PatchNotes"] = patchnotes
 		if set(platforms).issubset(set(list(Platform))):
 			i._data["Platforms"] = [{"Name": "All"}]
