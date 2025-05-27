@@ -204,7 +204,7 @@ class MaintenanceSchedule():
 		# その他項目
 		raw["Result"] = True
 
-		js = json.dumps(self._data)
+		js = json.dumps(raw)
 		return js
 
 	def db_dict(self) -> dict:
