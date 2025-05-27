@@ -197,7 +197,7 @@ class MaintenanceSchedule():
 
 		# プラットフォーム一覧
 		# 全プラットフォームの場合は専用の値
-		if set(self.platforms).issubset(set(list(Platform))):
+		if set(self.platforms).issuperset(set(list(Platform))):
 			raw["Platforms"] = [{"Name": "All"}]
 		else:
 			raw["Platforms"] = [{"Name": pf.name} for pf in self.platforms]
