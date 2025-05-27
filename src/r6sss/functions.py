@@ -60,12 +60,14 @@ def get_maintenance_schedule() -> MaintenanceSchedule | None:
 		return None
 
 	raw_schedule = result_json.get("data")
-	schedule = MaintenanceSchedule()
-	schedule._data = raw_schedule
 
-	if not schedule:
+	if not raw_schedule:
 		logger.error("メンテナンススケジュールの取得に失敗")
 		logger.error("- 'data' is None")
 		return None
+
+	# メンテナンススケジュール型のインスタンスを生成して返す
+	schedule = MaintenanceSchedule()
+	schedule._data = raw_schedule
 
 	return schedule
