@@ -109,6 +109,24 @@ class MaintenanceSchedule():
 	def __init__(self) -> None:
 		self._data = {}
 
+	@classmethod
+	def create(cls,
+		title: str,
+		detail: str,
+		downtime: int,
+		date: datetime.datetime,
+		patchnotes: str,
+		platforms: list[Platform]
+	):
+		i = MaintenanceSchedule()
+		i._data["Title"] = title
+		i._data["Detail"] = detail
+		i._data["Downtime"] = downtime
+		i._data["Date"] = date
+		i._data["PatchNotes"] = patchnotes
+		i._data["Platforms"] = platforms
+		return i
+
 	def _get_data(self, key: str):
 		if key not in self._data:
 			return None
