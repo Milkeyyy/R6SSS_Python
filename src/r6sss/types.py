@@ -167,6 +167,7 @@ class MaintenanceSchedule():
 		i._data["Date"] = date.isoformat()
 		i._data["PatchNotes"] = patchnotes
 		i._data["Platforms"] = cls.convert_to_dict_platform_list(platforms)
+		return i
 
 	def _get_data(self, key: str):
 		return self._data[key]
