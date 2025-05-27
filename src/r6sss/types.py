@@ -203,3 +203,6 @@ class MaintenanceSchedule():
 
 		js = json.dumps(self._data)
 		return js
+
+	def db_dict(self) -> dict:
+		return json.loads(self.db_json())
