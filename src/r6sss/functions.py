@@ -59,7 +59,9 @@ def get_maintenance_schedule() -> MaintenanceSchedule | None:
 			logger.error("- %s %s", str(result.status_code), result.json()["detail"])
 		return None
 
-	schedule = result_json.get("data")
+	raw_schedule = result_json.get("data")
+	schedule = MaintenanceSchedule()
+	schedule._data = raw_schedule
 
 	if not schedule:
 		logger.error("メンテナンススケジュールの取得に失敗")
