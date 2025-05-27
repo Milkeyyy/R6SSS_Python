@@ -100,3 +100,59 @@ class Status():
 		]
 
 		return ";".join(texts)
+
+class MaintenanceSchedule():
+	"""メンテナンススケジュール"""
+
+	_data: dict
+
+	def __init__(self) -> None:
+		self._data = {}
+
+	def _get_data(self, key: str):
+		if key not in self._data:
+			return None
+		return self._data[key]
+
+	@property
+	def title(self) -> str | None:
+		"""メンテナンスのタイトル"""
+		return self._get_data("Title")
+
+	@property
+	def detail(self) -> str | None:
+		"""メンテナンスの詳細情報"""
+		return self._get_data("Detail")
+
+	@property
+	def downtime(self) -> int | None:
+		"""メンテナンスのダウンタイム"""
+		return self._get_data("Downtime")
+
+	@property
+	def date(self) -> datetime.datetime | None:
+		"""メンテナンスの予定日時"""
+		ts = self._get_data("Timestamp")
+		if ts:
+			return datetime.datetime.fromtimestamp(ts)
+		return None
+
+	@property
+	def patchnotes(self) -> str | None:
+		"""パッチノートのURL"""
+		return self._get_data("Patchnotes")
+
+	@property
+	def platforms(self) -> list[Platform]:
+		"""メンテナンスの対象プラットフォーム"""
+		result = []
+		platform_list: list[dict[str, str]] | None = self._get_data("Platforms")
+		if platform_list:
+			for pf in platform_list:
+				# プラットフォーム名が All の場合は全プラットフォームをリストへ入れる
+				if pf["Name"] == "All":
+					result = list(Platform)
+				# 名前をもとに生成した Enum をリストへ入れる
+				else:
+					result.append(Platform[pf["Name"]])
+		return result
