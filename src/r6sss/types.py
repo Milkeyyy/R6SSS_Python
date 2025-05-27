@@ -110,7 +110,15 @@ class MaintenanceSchedule():
 	_data: dict
 
 	def __init__(self) -> None:
-		self._data = {}
+		self._data = {
+			"Title": "",
+			"Detail": "",
+			"Downtime": 0,
+			"Timestamp": 0,
+			"Date": "1970-01-01T00:00:00Z",
+			"PatchNotes": "",
+			"Platforms": []
+		}
 
 	@classmethod
 	def create(cls,
@@ -135,35 +143,30 @@ class MaintenanceSchedule():
 		return i
 
 	def _get_data(self, key: str):
-		if key not in self._data:
-			return None
 		return self._data[key]
 
 	@property
-	def title(self) -> str | None:
+	def title(self) -> str:
 		"""メンテナンスのタイトル"""
 		return self._get_data("Title")
 
 	@property
-	def detail(self) -> str | None:
+	def detail(self) -> str:
 		"""メンテナンスの詳細情報"""
 		return self._get_data("Detail")
 
 	@property
-	def downtime(self) -> int | None:
+	def downtime(self) -> int:
 		"""メンテナンスのダウンタイム"""
 		return self._get_data("Downtime")
 
 	@property
-	def date(self) -> datetime.datetime | None:
+	def date(self) -> datetime.datetime:
 		"""メンテナンスの予定日時"""
-		ts = self._get_data("Timestamp")
-		if ts:
-			return datetime.datetime.fromtimestamp(ts)
-		return None
+		return datetime.datetime.fromtimestamp(self._get_data("Timestamp"))
 
 	@property
-	def patchnotes(self) -> str | None:
+	def patchnotes(self) -> str:
 		"""パッチノートのURL"""
 		return self._get_data("PatchNotes")
 
