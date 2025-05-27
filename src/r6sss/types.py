@@ -1,5 +1,8 @@
 import datetime
 from enum import Enum
+import json
+
+from ._logger import logger
 
 
 class Platform(Enum):
@@ -174,3 +177,29 @@ class MaintenanceSchedule():
 				else:
 					result.append(Platform[pf["Name"]])
 		return result
+
+	def db_json(self) -> str:
+		raw = self._data.copy()
+
+		# 日時
+		# None の場合は今の日時にする
+		if not self.date:
+			logger.warning("Schedule Date is None. Set to the current date.")
+			raw["Timestamp"] = datetime.datetime.now().timestamp()
+			raw["Date"] = datetime.datetime.now().isoformat()
+		else:
+			raw["Timestamp"] = self.date.timestamp()
+			raw["Date"] = self.date.isoformat()
+
+		# プラットフォーム一覧
+		# 全プラットフォームの場合は専用の値
+		if set(self.platforms).issubset(set(list(Platform))):
+			raw["Platforms"] = [{"Name": "All"}]
+		else:
+			raw["Platforms"] = [{"Name": pf.name} for pf in self.platforms]
+
+		# その他項目
+		raw["Result"] = True
+
+		js = json.dumps(self._data)
+		return js
