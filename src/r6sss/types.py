@@ -128,7 +128,7 @@ class MaintenanceSchedule():
 		i._data["Timestamp"] = date.timestamp()
 		i._data["Date"] = date.isoformat()
 		i._data["PatchNotes"] = patchnotes
-		if set(platforms).issubset(set(list(Platform))):
+		if set(platforms).issuperset(set(list(Platform))):
 			i._data["Platforms"] = [{"Name": "All"}]
 		else:
 			i._data["Platforms"] = [{"Name": pf.name} for pf in platforms]
