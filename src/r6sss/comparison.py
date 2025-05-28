@@ -10,6 +10,9 @@ class ComparisonDetail(Enum):
 	UNKNOWN = -1
 	"""不明"""
 
+	NO_CHANGE = auto()
+	"""変化なし"""
+
 	ALL_FEATURES_OPERATIONAL = auto()
 	"""すべての機能が正常に稼働中"""
 
@@ -82,37 +85,30 @@ class ComparisonResult():
 
 def compare_server_status(previous: list[Status], current: list[Status]) -> list[ComparisonResult]:
 	"""2つのサーバーステータスを比較して結果を返す"""
-	# 2つのステータスのプラットフォームの構成と並び順を比較する 異なる場合はエラー
-	#if ";".join([s.platform for s in previous_statuses]) != ";".join([s.platform for s in current_statuses]):
-	#	raise ValueError("比較する2つのステータスのリストは、同じプラットフォームで構成されたリストである必要があります。")
 
-	#current_status_list = get_server_status()
+	impacted_feature_max_count: int = 3 # 影響を受ける機能の最大数 影響を受ける機能の数がこの最大数に達した場合はすべて影響を受けているとみなす
 
 	# ステータスの変化ごとの辞書を作成 キーは現在のステータスを文字列化したものと以前のステータスを文字列化したものを結合したもの
 	status_list: dict[str, list] = {}
 	for status in current:
 		# ステータス比較用テキスト辞書へ追加
-		_status_text = status.text + ";" + [_ for _ in previous if _.platform == status.platform][0].text # 現在のステータスを文字列化したものと以前のステータスを文字列化したもの
+		_prev_status = [_ for _ in previous if _.platform == status.platform][0]
+		_status_text = _prev_status.text + ";" + status.text # 現在のステータスを文字列化したものと以前のステータスを文字列化したもの (以前;現在)
 		if _status_text not in status_list:
-			status_list[_status_text] = [status.platform]
+			status_list[_status_text] = [[_prev_status, status], [status.platform]]
 		else:
 			status_list[_status_text].append(status.platform)
 
-	impacted_feature_max_count: int = 3 # 影響を受ける機能の最大数 影響を受ける機能の数がこの最大数に達した場合はすべて影響を受けているとみなす
-
-
 	impacted_features: list[str] # 影響を受ける機能の一覧
-	# impacted_features_text: str = "" # 影響を受ける機能のツイート用文字
-	# changed_detail: ComparisonDetail # どのような変更があったか
-	# changed_features: list[str] # 変更があった機能の一覧
 
 	results: list[ComparisonResult] = []
 
-	for status_text, _platforms in status_list.items():
+	for status_text, _status_data in status_list.items():
 		# ステータス情報
-		status = current[0]
-		pre_status = previous[0]
+		status = _status_data[0][1]
+		pre_status = _status_data[0][0]
 		# プラットフォーム一覧
+		_platforms = _status_data[1]
 		platform_list = []
 		for _pf in _platforms:
 			platform_list.append(_pf)
@@ -131,7 +127,6 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 			impacted_features.append("Purchase")
 
 		impacted_features_text = "・" + "\n・".join(impacted_features)
-
 
 		# 以前の影響を受ける機能一覧
 		previous_impacted_features = []
@@ -160,12 +155,14 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 		# 変更があった機能一覧
 		changed_features = list(set(resolved_impacted_features + new_impacted_features))
 
-		logger.debug(status_text)
-		logger.debug(_platforms)
-		logger.debug(previous_impacted_features)
-		logger.debug(impacted_features)
-		logger.debug(resolved_impacted_features)
-		logger.debug(new_impacted_features)
+		logger.debug("====================")
+		logger.debug("  Status Text: %s", status_text)
+		logger.debug("    Platforms: %s", _platforms)
+		logger.debug("Prev Imp Feat: %s", previous_impacted_features)
+		logger.debug("Curr Imp Feat: %s", impacted_features)
+		logger.debug("Rslv Imp Feat: %s", resolved_impacted_features)
+		logger.debug(" New Imp Feat: %s", new_impacted_features)
+		logger.debug("====================")
 
 		### ステータスの変化によってツイートの内容を変える
 		###### メンテナンス開始
@@ -191,7 +188,7 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 			##### すべての機能が正常に稼働中
 			if len(impacted_features) == 0:
 				###### すべて/一部の機能で問題が発生中 -> すべての機能の問題が解消
-				if len(previous_impacted_features) >= 1:
+				if len(previous_impacted_features) >= 1: # 以前の影響を受ける機能が1以上
 					results.append(ComparisonResult(
 						detail=ComparisonDetail.ALL_FEATURES_OUTAGE_RESOLVED,
 						platforms=_platforms,
@@ -199,7 +196,7 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 						resolved_impected_features=resolved_impacted_features
 					))
 			###### すべての機能で問題が発生中 ->
-			elif len(impacted_features) >= impacted_feature_max_count:
+			elif len(impacted_features) >= impacted_feature_max_count: # 影響を受ける機能が最大数以上
 				# 現在の影響を受ける機能の数が以前よりも多いか、以前の影響を受ける機能が0の場合
 				# -> すべての機能で問題が発生中
 				if len(previous_impacted_features) == 0 or len(previous_impacted_features) < len(impacted_features):
@@ -213,11 +210,11 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 			elif all((
 				len(impacted_features) >= 1, # 影響を受ける機能が1以上
 				len(impacted_features) < impacted_feature_max_count, # 影響を受ける機能が3未満
-				impacted_features != previous_impacted_features # 現在と以前の影響を受ける機能が異なる
+				sorted(impacted_features) != sorted(previous_impacted_features) # 現在と以前の影響を受ける機能が異なる
 			)):
 				# 一部の機能で問題が発生中
-				# 新規s
-				if len(previous_impacted_features) == 0:
+				# 新規
+				if len(previous_impacted_features) == 0: # 以前の影響を受ける機能が0
 					results.append(ComparisonResult(
 						detail=ComparisonDetail.SOME_FEATURES_OUTAGE,
 						platforms=_platforms,
@@ -225,12 +222,19 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 						resolved_impected_features=resolved_impacted_features
 					))
 				# 影響を受ける機能が変わった
-				elif impacted_features != previous_impacted_features:
+				elif sorted(impacted_features) != sorted(previous_impacted_features): # 現在と以前の影響を受ける機能が異なる
 					results.append(ComparisonResult(
 						detail=ComparisonDetail.SOME_FEATURES_OUTAGE_RESOLVED,
 						platforms=_platforms,
 						impacted_features=new_impacted_features,
 						resolved_impected_features=resolved_impacted_features
 					))
+			# else:
+			# 	results.append(ComparisonResult(
+			# 		detail=ComparisonDetail.NO_CHANGE,
+			# 		platforms=_platforms,
+			# 		impacted_features=[],
+			# 		resolved_impected_features=[]
+			# 	))
 
 	return results
