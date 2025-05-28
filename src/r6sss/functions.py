@@ -44,11 +44,11 @@ def get_server_status(platforms: list[Platform] | None = None) -> list[Status] |
 	return status_list
 
 def get_maintenance_schedule() -> MaintenanceSchedule | None:
-	"""メンテナンスのスケジュール情報を取得して返す"""
+	"""直近のメンテナンスのスケジュール情報を取得して返す"""
 
 	# メンテナンススケジュールを取得
 	result = httpx.get(
-		_API_URL + "/schedule/latest",
+		_API_URL + "/schedule/recent",
 		timeout=7
 	)
 	result_json = result.json()
