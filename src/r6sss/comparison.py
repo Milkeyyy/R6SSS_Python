@@ -97,7 +97,7 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 		if _status_text not in status_list:
 			status_list[_status_text] = [[_prev_status, status], [status.platform]]
 		else:
-			status_list[_status_text].append(status.platform)
+			status_list[_status_text][1].append(status.platform)
 
 	impacted_features: list[str] # 影響を受ける機能の一覧
 
