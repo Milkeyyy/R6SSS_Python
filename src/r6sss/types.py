@@ -14,7 +14,7 @@ class Platform(Enum):
 	XB1 = "XB1"
 	XBSX = "XBSX/S"
 
-class Status():
+class Status:
 	"""サーバーステータス"""
 
 	_platform: Platform
@@ -104,21 +104,24 @@ class Status():
 
 		return ";".join(texts)
 
-class MaintenanceSchedule():
+class MaintenanceSchedule:
 	"""メンテナンススケジュール"""
 
 	_data: dict
 
-	def __init__(self) -> None:
-		self._data = {
-			"Title": "",
-			"Detail": "",
-			"Downtime": 0,
-			"Timestamp": 0,
-			"Date": "1970-01-01T00:00:00Z",
-			"PatchNotes": "",
-			"Platforms": []
-		}
+	def __init__(self, data: dict | None = None) -> None:
+		if data:
+			self._data = data
+		else:
+			self._data = {
+				"Title": "",
+				"Detail": "",
+				"Downtime": 0,
+				"Timestamp": 0,
+				"Date": "1970-01-01T00:00:00Z",
+				"PatchNotes": "",
+				"Platforms": []
+			}
 
 	@classmethod
 	def convert_to_dict_platform_list(cls, platforms: list[Platform]) -> list[dict[str, str]]:

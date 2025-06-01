@@ -49,7 +49,7 @@ def get_maintenance_schedule() -> MaintenanceSchedule | None:
 	# メンテナンススケジュールを取得
 	result = httpx.get(
 		_API_URL + "/schedule/recent",
-		timeout=7
+		timeout=10
 	)
 	result_json = result.json()
 
@@ -67,7 +67,34 @@ def get_maintenance_schedule() -> MaintenanceSchedule | None:
 		return None
 
 	# メンテナンススケジュール型のインスタンスを生成して返す
-	schedule = MaintenanceSchedule()
-	schedule._data = raw_schedule
+	schedule = MaintenanceSchedule(raw_schedule)
+
+	return schedule
+
+def get_maintenance_schedule_list() -> list[MaintenanceSchedule] | None:
+	"""全てのメンテナンスのスケジュール情報を取得して返す"""
+
+	# メンテナンススケジュールを取得
+	result = httpx.get(
+		_API_URL + "/schedule/list",
+		timeout=10
+	)
+	result_json = result.json()
+
+	if result.status_code != 200:
+		logger.error("メンテナンススケジュールの取得に失敗")
+		if "detail" in result_json:
+			logger.error("- %s %s", str(result.status_code), result.json()["detail"])
+		return None
+
+	raw_schedule = result_json.get("data")
+
+	if not raw_schedule:
+		logger.error("メンテナンススケジュールの取得に失敗")
+		logger.error("- 'data' is None")
+		return None
+
+	# メンテナンススケジュール型のインスタンスを生成して返す
+	schedule = [MaintenanceSchedule(d) for d in raw_schedule]
 
 	return schedule
