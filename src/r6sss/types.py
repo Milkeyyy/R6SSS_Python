@@ -49,7 +49,7 @@ class Status:
 	def updated_at(self) -> datetime.datetime:
 		"""最終更新日時"""
 		_d = self._data["UpdatedAt"]
-		return datetime.datetime.fromtimestamp(_d)
+		return datetime.datetime.fromtimestamp(_d, tz=datetime.UTC)
 
 	@property
 	def connectivity(self) -> str:
@@ -126,15 +126,8 @@ class MaintenanceSchedule:
 	@classmethod
 	def convert_to_dict_platform_list(cls, platforms: list[Platform]) -> list[dict[str, str]]:
 		"""プラットフォーム列挙値のリストをAPIから返ってくるものと同じ辞書形式へ変換する"""
-		result = []
-
-		if set(platforms).issuperset(set(list(Platform))):
-			# 全プラットフォーム
-			result = [{"Name": "All"}]
-		else:
-			result = [{"Name": pf.name} for pf in platforms]
-
-		return result
+		# 全プラットフォームかそれ以外かで値を変える
+		return [{"Name": "All"}] if set(platforms).issuperset(set(Platform)) else [{"Name": pf.name} for pf in platforms]
 
 	@classmethod
 	def convert_to_enum_platform_list(cls, platforms: list[dict[str, str]]) -> list[Platform]:
@@ -192,7 +185,7 @@ class MaintenanceSchedule:
 	@property
 	def date(self) -> datetime.datetime:
 		"""メンテナンスの予定日時"""
-		return datetime.datetime.fromtimestamp(self._get_data("Timestamp"))
+		return datetime.datetime.fromtimestamp(self._get_data("Timestamp"), tz=datetime.UTC)
 
 	@property
 	def patchnotes(self) -> str:
@@ -215,8 +208,8 @@ class MaintenanceSchedule:
 		# None の場合は今の日時にする
 		if not self.date:
 			logger.warning("Schedule Date is None. Set to the current date.")
-			raw["Timestamp"] = datetime.datetime.now().timestamp()
-			raw["Date"] = datetime.datetime.now().isoformat()
+			raw["Timestamp"] = datetime.datetime.now(tz=datetime.UTC).timestamp()
+			raw["Date"] = datetime.datetime.now(tz=datetime.UTC).isoformat()
 		else:
 			raw["Timestamp"] = self.date.timestamp()
 			raw["Date"] = self.date.isoformat()
@@ -227,8 +220,7 @@ class MaintenanceSchedule:
 		# その他項目
 		raw["Result"] = True
 
-		js = json.dumps(raw)
-		return js
+		return json.dumps(raw)
 
 	def db_dict(self) -> dict:
 		return json.loads(self.db_json())

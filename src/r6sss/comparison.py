@@ -1,7 +1,15 @@
-from .types import ComparisonDetail, ComparisonResult, Status
+import datetime
+
+from datetimerange import DateTimeRange
+
+from .types import ComparisonDetail, ComparisonResult, MaintenanceSchedule, Status
 
 
-def compare_server_status(previous: list[Status], current: list[Status]) -> list[ComparisonResult]:
+def compare_server_status(
+	previous: list[Status],
+	current: list[Status],
+	maintenance_schedule: MaintenanceSchedule | None = None,
+) -> list[ComparisonResult]:
 	"""2つのサーバーステータスを比較して結果を返す"""
 	impacted_feature_max_count: int = (
 		3  # 影響を受ける機能の最大数 影響を受ける機能の数がこの最大数に達した場合はすべて影響を受けているとみなす
@@ -24,15 +32,12 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 
 	results: list[ComparisonResult] = []
 
-	for status_text, _status_data in status_list.items():
+	for _status_data in status_list.values():
 		# ステータス情報
 		status = _status_data[0][1]
 		pre_status = _status_data[0][0]
 		# プラットフォーム一覧
 		_platforms = _status_data[1]
-		platform_list = []
-		for _pf in _platforms:
-			platform_list.append(_pf)
 
 		# 影響を受ける機能一覧
 		# impacted_feature_max_count = 3 # 影響を受ける機能一覧の最大数
@@ -90,25 +95,59 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 			# 前のステータスもメンテナンス中の場合は変化なしなのでループを続ける
 			if pre_status.maintenance:
 				continue
-			results.append(
-				ComparisonResult(
-					detail=ComparisonDetail.START_MAINTENANCE,
-					platforms=_platforms,
-					impacted_features=new_impacted_features,
-					resolved_impected_features=resolved_impacted_features,
-				)
-			)
-		else:
-			###### メンテナンス終了
-			if pre_status.maintenance:
+			# メンテナンススケジュールの情報が渡されている場合は計画メンテナンスかどうか判定する
+			if maintenance_schedule is not None and datetime.datetime.now(tz=datetime.UTC) in DateTimeRange(
+				# 念の為開始日時を10分早めにする
+				maintenance_schedule.date - datetime.timedelta(minutes=10),
+				# 延長などを考慮して終了日時に30分の余裕を持たせる
+				maintenance_schedule.date + datetime.timedelta(minutes=maintenance_schedule.downtime + 30),
+				timezone=datetime.UTC,
+			):  # 計画メンテナンス範囲内
 				results.append(
 					ComparisonResult(
-						detail=ComparisonDetail.END_MAINTENANCE,
+						detail=ComparisonDetail.SCHEDULED_MAINTENANCE_START,
 						platforms=_platforms,
 						impacted_features=new_impacted_features,
 						resolved_impected_features=resolved_impacted_features,
 					)
 				)
+			else:  # 計画メンテナンス範囲外
+				results.append(
+					ComparisonResult(
+						detail=ComparisonDetail.START_MAINTENANCE,
+						platforms=_platforms,
+						impacted_features=new_impacted_features,
+						resolved_impected_features=resolved_impacted_features,
+					)
+				)
+		else:
+			###### メンテナンス終了
+			if pre_status.maintenance:
+				# メンテナンススケジュールの情報が渡されている場合は計画メンテナンスかどうか判定する
+				if maintenance_schedule is not None and datetime.datetime.now(tz=datetime.UTC) in DateTimeRange(
+					# 念の為開始日時を10分早めにする
+					maintenance_schedule.date - datetime.timedelta(minutes=10),
+					# 延長などを考慮して終了日時に30分の余裕を持たせる
+					maintenance_schedule.date + datetime.timedelta(minutes=maintenance_schedule.downtime + 30),
+					timezone=datetime.UTC,
+				):  # 計画メンテナンス範囲内
+					results.append(
+						ComparisonResult(
+							detail=ComparisonDetail.SCHEDULED_MAINTENANCE_END,
+							platforms=_platforms,
+							impacted_features=new_impacted_features,
+							resolved_impected_features=resolved_impacted_features,
+						)
+					)
+				else:  # 計画メンテナンス範囲外
+					results.append(
+						ComparisonResult(
+							detail=ComparisonDetail.END_MAINTENANCE,
+							platforms=_platforms,
+							impacted_features=new_impacted_features,
+							resolved_impected_features=resolved_impacted_features,
+						)
+					)
 			##### すべての機能が正常に稼働中
 			if len(impacted_features) == 0:
 				###### すべて/一部の機能で問題が発生中 -> すべての機能の問題が解消

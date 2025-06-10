@@ -8,10 +8,7 @@ _API_URL = "https://api-r6sss.milkeyyy.com/v2"
 
 def get_server_status(platforms: list[Platform] | None = None) -> list[Status] | None:
 	"""指定されたプラットフォームのサーバーステータスの一覧を取得して返す"""
-	if platforms is None:
-		params = None
-	else:
-		params = {"platform": [p.value for p in platforms]}
+	params = None if platforms is None else {"platform": [p.value for p in platforms]}
 
 	# サーバーステータスを取得
 	result = httpx.get(_API_URL + "/status", params=params, timeout=7)
@@ -58,9 +55,7 @@ def get_maintenance_schedule() -> MaintenanceSchedule | None:
 		return None
 
 	# メンテナンススケジュール型のインスタンスを生成して返す
-	schedule = MaintenanceSchedule(raw_schedule)
-
-	return schedule
+	return MaintenanceSchedule(raw_schedule)
 
 
 def get_maintenance_schedule_list() -> list[MaintenanceSchedule] | None:
@@ -83,6 +78,4 @@ def get_maintenance_schedule_list() -> list[MaintenanceSchedule] | None:
 		return None
 
 	# メンテナンススケジュール型のインスタンスを生成して返す
-	schedule = [MaintenanceSchedule(d) for d in raw_schedule]
-
-	return schedule
+	return [MaintenanceSchedule(d) for d in raw_schedule]
