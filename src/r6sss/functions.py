@@ -3,24 +3,18 @@ import httpx
 from ._logger import logger
 from .types import MaintenanceSchedule, Platform, Status
 
-
 _API_URL = "https://api-r6sss.milkeyyy.com/v2"
 
 
 def get_server_status(platforms: list[Platform] | None = None) -> list[Status] | None:
 	"""指定されたプラットフォームのサーバーステータスの一覧を取得して返す"""
-
 	if platforms is None:
 		params = None
 	else:
 		params = {"platform": [p.value for p in platforms]}
 
 	# サーバーステータスを取得
-	result = httpx.get(
-		_API_URL + "/status",
-		params=params,
-		timeout=7
-	)
+	result = httpx.get(_API_URL + "/status", params=params, timeout=7)
 	result_json = result.json()
 
 	if result.status_code != 200:
@@ -43,14 +37,11 @@ def get_server_status(platforms: list[Platform] | None = None) -> list[Status] |
 
 	return status_list
 
+
 def get_maintenance_schedule() -> MaintenanceSchedule | None:
 	"""直近のメンテナンスのスケジュール情報を取得して返す"""
-
 	# メンテナンススケジュールを取得
-	result = httpx.get(
-		_API_URL + "/schedule/recent",
-		timeout=10
-	)
+	result = httpx.get(_API_URL + "/schedule/recent", timeout=10)
 	result_json = result.json()
 
 	if result.status_code != 200:
@@ -71,14 +62,11 @@ def get_maintenance_schedule() -> MaintenanceSchedule | None:
 
 	return schedule
 
+
 def get_maintenance_schedule_list() -> list[MaintenanceSchedule] | None:
 	"""全てのメンテナンスのスケジュール情報を取得して返す"""
-
 	# メンテナンススケジュールを取得
-	result = httpx.get(
-		_API_URL + "/schedule/list",
-		timeout=10
-	)
+	result = httpx.get(_API_URL + "/schedule/list", timeout=10)
 	result_json = result.json()
 
 	if result.status_code != 200:

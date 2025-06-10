@@ -1,6 +1,6 @@
 import datetime
-from enum import Enum, auto
 import json
+from enum import Enum, auto
 
 from ._logger import logger
 
@@ -13,6 +13,7 @@ class Platform(Enum):
 	PS5 = "PS5"
 	XB1 = "XB1"
 	XBSX = "XBSX/S"
+
 
 class Status:
 	"""サーバーステータス"""
@@ -81,11 +82,10 @@ class Status:
 	@property
 	def features(self) -> dict[str, str]:
 		"""稼働状況の辞書"""
-
 		table = {
 			"authentication": self.authentication,
 			"matchmaking": self.matchmaking,
-			"purchase": self.purchase
+			"purchase": self.purchase,
 		}
 
 		return table
@@ -93,16 +93,16 @@ class Status:
 	@property
 	def text(self) -> str:
 		"""すべてのステータスを文字列にして結合したもの"""
-
 		texts = [
 			self.connectivity,
 			self.authentication,
 			self.purchase,
 			self.matchmaking,
-			str(self.maintenance)
+			str(self.maintenance),
 		]
 
 		return ";".join(texts)
+
 
 class MaintenanceSchedule:
 	"""メンテナンススケジュール"""
@@ -120,13 +120,12 @@ class MaintenanceSchedule:
 				"Timestamp": 0,
 				"Date": "1970-01-01T00:00:00Z",
 				"PatchNotes": "",
-				"Platforms": []
+				"Platforms": [],
 			}
 
 	@classmethod
 	def convert_to_dict_platform_list(cls, platforms: list[Platform]) -> list[dict[str, str]]:
 		"""プラットフォーム列挙値のリストをAPIから返ってくるものと同じ辞書形式へ変換する"""
-
 		result = []
 
 		if set(platforms).issuperset(set(list(Platform))):
@@ -140,7 +139,6 @@ class MaintenanceSchedule:
 	@classmethod
 	def convert_to_enum_platform_list(cls, platforms: list[dict[str, str]]) -> list[Platform]:
 		"""プラットフォームの辞書を列挙値のリストへ変換する"""
-
 		result = []
 
 		for pf in platforms:
@@ -154,13 +152,14 @@ class MaintenanceSchedule:
 		return result
 
 	@classmethod
-	def create(cls,
+	def create(
+		cls,
 		title: str,
 		detail: str,
 		downtime: int,
 		date: datetime.datetime,
 		patchnotes: str,
-		platforms: list[Platform]
+		platforms: list[Platform],
 	):
 		i = MaintenanceSchedule()
 		i._data["Title"] = title
@@ -234,6 +233,7 @@ class MaintenanceSchedule:
 	def db_dict(self) -> dict:
 		return json.loads(self.db_json())
 
+
 class ComparisonDetail(Enum):
 	"""サーバーステータスの比較結果を表す列挙値"""
 
@@ -270,7 +270,8 @@ class ComparisonDetail(Enum):
 	SCHEDULED_MAINTENANCE_END = auto()
 	"""計画メンテナンス終了"""
 
-class ComparisonResult():
+
+class ComparisonResult:
 	"""ステータス情報の比較結果"""
 
 	_changed_features: list[str]
@@ -284,7 +285,7 @@ class ComparisonResult():
 		detail: ComparisonDetail,
 		platforms: list[Platform],
 		impacted_features: list[str],
-		resolved_impected_features: list[str]
+		resolved_impected_features: list[str],
 	) -> None:
 		self._detail = detail
 		self._platforms = platforms
@@ -294,8 +295,9 @@ class ComparisonResult():
 	@property
 	def detail(self) -> ComparisonDetail:
 		"""ステータスの比較結果
-		
-		メンテナンス開始 や 一部の機能で問題が発生中 など"""
+
+		メンテナンス開始 や 一部の機能で問題が発生中 など
+		"""
 		return self._detail
 
 	@property
