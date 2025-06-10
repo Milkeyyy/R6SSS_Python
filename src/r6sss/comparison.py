@@ -155,14 +155,14 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 		# 変更があった機能一覧
 		changed_features = list(set(resolved_impacted_features + new_impacted_features))
 
-		logger.debug("====================")
-		logger.debug("  Status Text: %s", status_text)
-		logger.debug("    Platforms: %s", _platforms)
-		logger.debug("Prev Imp Feat: %s", previous_impacted_features)
-		logger.debug("Curr Imp Feat: %s", impacted_features)
-		logger.debug("Rslv Imp Feat: %s", resolved_impacted_features)
-		logger.debug(" New Imp Feat: %s", new_impacted_features)
-		logger.debug("====================")
+		# logger.debug("====================")
+		# logger.debug("  Status Text: %s", status_text)
+		# logger.debug("    Platforms: %s", _platforms)
+		# logger.debug("Prev Imp Feat: %s", previous_impacted_features)
+		# logger.debug("Curr Imp Feat: %s", impacted_features)
+		# logger.debug("Rslv Imp Feat: %s", resolved_impacted_features)
+		# logger.debug(" New Imp Feat: %s", new_impacted_features)
+		# logger.debug("====================")
 
 		### ステータスの変化によってツイートの内容を変える
 		###### メンテナンス開始
