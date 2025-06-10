@@ -15,7 +15,8 @@ classifiers = [
 ]
 requires-python = ">=3.10.0"
 dependencies = [
-	"httpx"
+	"datetimerange>=2.3.1",
+	"httpx",
 ]
 
 [tool.setuptools]
@@ -44,6 +45,7 @@ ignore = [
     "D415", # 同上 (クエスチョンマークなども含む)
     "INP001", # __init__.py ファイルが欠けているパッケージあり
     "RUF001", # あいまいな Unicode 文字の文字列
+    "RUF002", # あいまいな Unicode 文字の docstring
     "RUF003", # あいまいな Unicode 文字のコメント
     "SIM105", # try-except-pass ブロックを contextlib.suppress コンテキストマネージャーに置き換え
     "TD001", # invalid todo tag
