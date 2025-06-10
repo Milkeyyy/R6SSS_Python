@@ -116,7 +116,7 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 		# 影響を受ける機能一覧
 		#impacted_feature_max_count = 3 # 影響を受ける機能一覧の最大数
 		impacted_features = [] # 影響を受ける機能一覧を初期化
-		changed_features = []
+		#changed_features = []
 		if status.authentication == "Outage":
 			impacted_features.append("Authentication")
 
@@ -126,7 +126,7 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 		if status.purchase == "Outage":
 			impacted_features.append("Purchase")
 
-		impacted_features_text = "・" + "\n・".join(impacted_features)
+		#impacted_features_text = "・" + "\n・".join(impacted_features)
 
 		# 以前の影響を受ける機能一覧
 		previous_impacted_features = []
@@ -139,7 +139,7 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 		if pre_status.purchase == "Outage":
 			previous_impacted_features.append("Purchase")
 
-		previous_impacted_features_text = "・" + "\n・".join(previous_impacted_features)
+		#previous_impacted_features_text = "・" + "\n・".join(previous_impacted_features)
 
 
 		# 問題が解消した機能一覧
@@ -153,7 +153,7 @@ def compare_server_status(previous: list[Status], current: list[Status]) -> list
 			if _feat not in previous_impacted_features:
 				new_impacted_features.append(_feat)
 		# 変更があった機能一覧
-		changed_features = list(set(resolved_impacted_features + new_impacted_features))
+		#changed_features = list(set(resolved_impacted_features + new_impacted_features))
 
 		# logger.debug("====================")
 		# logger.debug("  Status Text: %s", status_text)
