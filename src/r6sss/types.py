@@ -1,5 +1,5 @@
 import datetime
-from enum import Enum
+from enum import Enum, auto
 import json
 
 from ._logger import logger
@@ -233,3 +233,82 @@ class MaintenanceSchedule:
 
 	def db_dict(self) -> dict:
 		return json.loads(self.db_json())
+
+class ComparisonDetail(Enum):
+	"""サーバーステータスの比較結果を表す列挙値"""
+
+	UNKNOWN = -1
+	"""不明"""
+
+	NO_CHANGE = auto()
+	"""変化なし"""
+
+	ALL_FEATURES_OPERATIONAL = auto()
+	"""すべての機能が正常に稼働中"""
+
+	ALL_FEATURES_OUTAGE = auto()
+	"""すべての機能で問題が発生中"""
+
+	ALL_FEATURES_OUTAGE_RESOLVED = auto()
+	"""すべての機能の問題が解消"""
+
+	SOME_FEATURES_OUTAGE = auto()
+	"""一部の機能で問題が発生中"""
+
+	SOME_FEATURES_OUTAGE_RESOLVED = auto()
+	"""一部の機能の問題が解消 (問題が発生している機能が変化した)"""
+
+	START_MAINTENANCE = auto()
+	"""メンテナンス開始"""
+
+	END_MAINTENANCE = auto()
+	"""メンテナンス終了"""
+
+	SCHEDULED_MAINTENANCE_START = auto()
+	"""計画メンテナンス開始"""
+
+	SCHEDULED_MAINTENANCE_END = auto()
+	"""計画メンテナンス終了"""
+
+class ComparisonResult():
+	"""ステータス情報の比較結果"""
+
+	_changed_features: list[str]
+	_detail: ComparisonDetail
+	_platforms: list[Platform]
+	_impacted_features: list[str]
+	_resolved_impacted_features: list[str]
+
+	def __init__(
+		self,
+		detail: ComparisonDetail,
+		platforms: list[Platform],
+		impacted_features: list[str],
+		resolved_impected_features: list[str]
+	) -> None:
+		self._detail = detail
+		self._platforms = platforms
+		self._impacted_features = impacted_features
+		self._resolved_impacted_features = resolved_impected_features
+
+	@property
+	def detail(self) -> ComparisonDetail:
+		"""ステータスの比較結果
+		
+		メンテナンス開始 や 一部の機能で問題が発生中 など"""
+		return self._detail
+
+	@property
+	def platforms(self) -> list[Platform]:
+		"""対象となるプラットフォームのリスト"""
+		return self._platforms
+
+	@property
+	def impacted_features(self) -> list[str]:
+		"""影響を受ける機能のリスト"""
+		return self._impacted_features
+
+	@property
+	def resolved_impacted_features(self) -> list[str]:
+		"""影響を受けていた機能(復旧した機能)のリスト"""
+		return self._resolved_impacted_features
