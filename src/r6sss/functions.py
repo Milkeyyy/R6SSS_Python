@@ -35,10 +35,12 @@ def get_server_status(platforms: list[Platform] | None = None) -> list[Status] |
 	return status_list
 
 
-def get_maintenance_schedule() -> MaintenanceSchedule | None:
+def get_maintenance_schedule(language: str | None = None) -> MaintenanceSchedule | None:
 	"""直近のメンテナンスのスケジュール情報を取得して返す"""
+	# パラメーター
+	params = {"lang": language} if language else {}
 	# メンテナンススケジュールを取得
-	result = httpx.get(_API_URL + "/schedule/recent", timeout=10)
+	result = httpx.get(_API_URL + "/schedule/recent", params=params, timeout=10)
 	result_json = result.json()
 
 	if result.status_code != 200:
@@ -58,10 +60,12 @@ def get_maintenance_schedule() -> MaintenanceSchedule | None:
 	return MaintenanceSchedule(raw_schedule)
 
 
-def get_maintenance_schedule_list() -> list[MaintenanceSchedule] | None:
+def get_maintenance_schedule_list(language: str | None = None) -> list[MaintenanceSchedule] | None:
 	"""全てのメンテナンスのスケジュール情報を取得して返す"""
+	# パラメーター
+	params = {"lang": language} if language else {}
 	# メンテナンススケジュールを取得
-	result = httpx.get(_API_URL + "/schedule/list", timeout=10)
+	result = httpx.get(_API_URL + "/schedule/list", params=params, timeout=10)
 	result_json = result.json()
 
 	if result.status_code != 200:
