@@ -2,10 +2,11 @@ import datetime
 
 from datetimerange import DateTimeRange
 
+from ._logger import logger
 from .types import ComparisonDetail, ComparisonResult, MaintenanceSchedule, Status
 
 
-def compare_server_status(
+def compare_server_status(  # noqa: PLR0915
 	previous: list[Status],
 	current: list[Status],
 	maintenance_schedule: MaintenanceSchedule | None = None,
@@ -18,8 +19,12 @@ def compare_server_status(
 	# ステータスの変化ごとの辞書を作成 キーは現在のステータスを文字列化したものと以前のステータスを文字列化したものを結合したもの
 	status_list: dict[str, list] = {}
 	for status in current:
+		# 以前のステータスが見つからない場合は比較できないためスキップ
+		_prev_status = next((s for s in previous if s.platform == status.platform), None)
+		if _prev_status is None:
+			logger.warning("Previous status for %s not found", status.platform.name)
+			continue
 		# ステータス比較用テキスト辞書へ追加
-		_prev_status = [_ for _ in previous if _.platform == status.platform][0]
 		_status_text = (
 			_prev_status.text + ";" + status.text
 		)  # 現在のステータスを文字列化したものと以前のステータスを文字列化したもの (以前;現在)
@@ -68,15 +73,9 @@ def compare_server_status(
 		# previous_impacted_features_text = "・" + "\n・".join(previous_impacted_features)
 
 		# 問題が解消した機能一覧
-		resolved_impacted_features = []
-		for _feat in previous_impacted_features:
-			if _feat not in impacted_features:
-				resolved_impacted_features.append(_feat)
+		resolved_impacted_features = [_feat for _feat in previous_impacted_features if _feat not in impacted_features]
 		# 新たに問題が発生した機能一覧
-		new_impacted_features = []
-		for _feat in impacted_features:
-			if _feat not in previous_impacted_features:
-				new_impacted_features.append(_feat)
+		new_impacted_features = [_feat for _feat in impacted_features if _feat not in previous_impacted_features]
 		# 変更があった機能一覧
 		# changed_features = list(set(resolved_impacted_features + new_impacted_features))
 
@@ -108,7 +107,7 @@ def compare_server_status(
 						detail=ComparisonDetail.SCHEDULED_MAINTENANCE_START,
 						platforms=_platforms,
 						impacted_features=new_impacted_features,
-						resolved_impected_features=resolved_impacted_features,
+						resolved_impacted_features=resolved_impacted_features,
 					)
 				)
 			else:  # 計画メンテナンス範囲外
@@ -117,7 +116,7 @@ def compare_server_status(
 						detail=ComparisonDetail.START_MAINTENANCE,
 						platforms=_platforms,
 						impacted_features=new_impacted_features,
-						resolved_impected_features=resolved_impacted_features,
+						resolved_impacted_features=resolved_impacted_features,
 					)
 				)
 		else:
@@ -136,7 +135,7 @@ def compare_server_status(
 							detail=ComparisonDetail.SCHEDULED_MAINTENANCE_END,
 							platforms=_platforms,
 							impacted_features=new_impacted_features,
-							resolved_impected_features=resolved_impacted_features,
+							resolved_impacted_features=resolved_impacted_features,
 						)
 					)
 				else:  # 計画メンテナンス範囲外
@@ -145,7 +144,7 @@ def compare_server_status(
 							detail=ComparisonDetail.END_MAINTENANCE,
 							platforms=_platforms,
 							impacted_features=new_impacted_features,
-							resolved_impected_features=resolved_impacted_features,
+							resolved_impacted_features=resolved_impacted_features,
 						)
 					)
 			##### すべての機能が正常に稼働中
@@ -157,7 +156,7 @@ def compare_server_status(
 							detail=ComparisonDetail.ALL_FEATURES_OUTAGE_RESOLVED,
 							platforms=_platforms,
 							impacted_features=new_impacted_features,
-							resolved_impected_features=resolved_impacted_features,
+							resolved_impacted_features=resolved_impacted_features,
 						)
 					)
 			###### すべての機能で問題が発生中 ->
@@ -170,7 +169,7 @@ def compare_server_status(
 							detail=ComparisonDetail.ALL_FEATURES_OUTAGE,
 							platforms=_platforms,
 							impacted_features=new_impacted_features,
-							resolved_impected_features=resolved_impacted_features,
+							resolved_impacted_features=resolved_impacted_features,
 						)
 					)
 			###### 一部の機能で問題が発生中 ->
@@ -189,7 +188,7 @@ def compare_server_status(
 							detail=ComparisonDetail.SOME_FEATURES_OUTAGE,
 							platforms=_platforms,
 							impacted_features=new_impacted_features,
-							resolved_impected_features=resolved_impacted_features,
+							resolved_impacted_features=resolved_impacted_features,
 						)
 					)
 				# 影響を受ける機能が変わった
@@ -199,7 +198,7 @@ def compare_server_status(
 							detail=ComparisonDetail.SOME_FEATURES_OUTAGE_RESOLVED,
 							platforms=_platforms,
 							impacted_features=new_impacted_features,
-							resolved_impected_features=resolved_impacted_features,
+							resolved_impacted_features=resolved_impacted_features,
 						)
 					)
 			# else:

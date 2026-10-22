@@ -1,8 +1,7 @@
 import datetime
 import json
 from enum import Enum, auto
-
-from ._logger import logger
+from typing import Self
 
 
 class Platform(Enum):
@@ -25,15 +24,8 @@ class Status:
 		self._platform = platform
 		self._data = data
 
-	def _get_data(self, key: str):
-		if key not in self._data["Status"]:
-			return "Unknown"
-		return self._data["Status"][key]
-
-	def _get_feat_data(self, key: str):
-		if key not in self._data["Status"]["Features"]:
-			return "Unknown"
-		return self._data["Status"]["Features"][key]
+	def _get_feat_data(self, key: str) -> str:
+		return self._data["Status"].get("Features", {}).get(key, "Unknown")
 
 	@property
 	def data(self) -> dict:
@@ -54,7 +46,7 @@ class Status:
 	@property
 	def connectivity(self) -> str:
 		"""接続状況"""
-		return self._get_data("Connectivity")
+		return self._data["Status"].get("Connectivity", "Unknown")
 
 	@property
 	def authentication(self) -> str:
@@ -74,21 +66,16 @@ class Status:
 	@property
 	def maintenance(self) -> bool:
 		"""メンテナンス中かどうか"""
-		_d = self._get_data("Maintenance")
-		if _d == "Unknown":
-			return False
-		return _d
+		return self._data["Status"].get("Maintenance", False) is True
 
 	@property
 	def features(self) -> dict[str, str]:
 		"""稼働状況の辞書"""
-		table = {
+		return {
 			"authentication": self.authentication,
 			"matchmaking": self.matchmaking,
 			"purchase": self.purchase,
 		}
-
-		return table
 
 	@property
 	def text(self) -> str:
@@ -153,8 +140,8 @@ class MaintenanceSchedule:
 		date: datetime.datetime,
 		patchnotes: str,
 		platforms: list[Platform],
-	):
-		i = MaintenanceSchedule()
+	) -> Self:
+		i = cls()
 		i._data["Title"] = title
 		i._data["Detail"] = detail
 		i._data["Downtime"] = downtime
@@ -164,55 +151,45 @@ class MaintenanceSchedule:
 		i._data["Platforms"] = cls.convert_to_dict_platform_list(platforms)
 		return i
 
-	def _get_data(self, key: str):
-		return self._data[key]
-
 	@property
 	def title(self) -> str:
 		"""メンテナンスのタイトル"""
-		return self._get_data("Title")
+		return self._data["Title"]
 
 	@property
 	def detail(self) -> str:
 		"""メンテナンスの詳細情報"""
-		return self._get_data("Detail")
+		return self._data["Detail"]
 
 	@property
 	def downtime(self) -> int:
 		"""メンテナンスのダウンタイム"""
-		return self._get_data("Downtime")
+		return self._data["Downtime"]
 
 	@property
 	def date(self) -> datetime.datetime:
 		"""メンテナンスの予定日時"""
-		return datetime.datetime.fromtimestamp(self._get_data("Timestamp"), tz=datetime.UTC)
+		return datetime.datetime.fromtimestamp(self._data["Timestamp"], tz=datetime.UTC)
 
 	@property
 	def patchnotes(self) -> str:
 		"""パッチノートのURL"""
-		return self._get_data("PatchNotes")
+		return self._data["PatchNotes"]
 
 	@property
 	def platforms(self) -> list[Platform]:
 		"""メンテナンスの対象プラットフォーム"""
-		result = []
-		platform_list: list[dict[str, str]] | None = self._get_data("Platforms")
-		if platform_list:
-			result = self.convert_to_enum_platform_list(platform_list)
-		return result
+		platform_list: list[dict[str, str]] | None = self._data["Platforms"]
+		if not platform_list:
+			return []
+		return self.convert_to_enum_platform_list(platform_list)
 
 	def db_json(self) -> str:
 		raw = self._data.copy()
 
 		# 日時
-		# None の場合は今の日時にする
-		if not self.date:
-			logger.warning("Schedule Date is None. Set to the current date.")
-			raw["Timestamp"] = datetime.datetime.now(tz=datetime.UTC).timestamp()
-			raw["Date"] = datetime.datetime.now(tz=datetime.UTC).isoformat()
-		else:
-			raw["Timestamp"] = self.date.timestamp()
-			raw["Date"] = self.date.isoformat()
+		raw["Timestamp"] = self.date.timestamp()
+		raw["Date"] = self.date.isoformat()
 
 		# プラットフォーム一覧
 		raw["Platforms"] = self.convert_to_dict_platform_list(self.platforms)
@@ -277,12 +254,12 @@ class ComparisonResult:
 		detail: ComparisonDetail,
 		platforms: list[Platform],
 		impacted_features: list[str],
-		resolved_impected_features: list[str],
+		resolved_impacted_features: list[str],
 	) -> None:
 		self._detail = detail
 		self._platforms = platforms
 		self._impacted_features = impacted_features
-		self._resolved_impacted_features = resolved_impected_features
+		self._resolved_impacted_features = resolved_impacted_features
 
 	@property
 	def detail(self) -> ComparisonDetail:

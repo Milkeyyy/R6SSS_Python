@@ -3,20 +3,43 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-version = "0.1.0"
 name = "r6sss"
 description = "R6SSS Web API Wrapper Library"
+readme = "README.md"
 authors = [
 	{name = "Milkeyyy"}
 ]
-
-classifiers = [
-	"Programming Language :: Python :: 3.10",
+requires-python = ">=3.11.0"
+dynamic = ["version"]
+keywords = [
+	"rainbow six siege",
+	"r6",
+	"server status",
+	"api wrapper",
 ]
-requires-python = ">=3.10.0"
+classifiers = [
+	"Development Status :: 4 - Beta",
+	"Intended Audience :: Developers",
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3.11",
+	"Programming Language :: Python :: 3.12",
+	"Programming Language :: Python :: 3.13",
+	"Typing :: Typed",
+]
 dependencies = [
 	"datetimerange>=2.3.2",
 	"httpx>=0.28.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/Milkeyyy/R6SSS_Python"
+Repository = "https://github.com/Milkeyyy/R6SSS_Python"
+Issues = "https://github.com/Milkeyyy/R6SSS_Python/issues"
+
+[dependency-groups]
+dev = [
+	"pytest>=8.0",
+	"ruff>=0.8",
 ]
 
 [tool.uv]
@@ -26,8 +49,14 @@ exclude-newer = "1 day"
 url = "https://pypi.flatt.tech/simple/"
 default = true
 
-[tool.setuptools]
-package-dir = {"" = "src"}
+[tool.hatch.version]
+path = "src/r6sss/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/r6sss"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 140
@@ -42,8 +71,13 @@ select = ["ALL"]
 ignore = [
     "BLE001", # キャッチする例外が明示されていない
     "COM812", # 末尾にカンマがない
+    "CPY001", # 著作権表示を要求しない
+    "EM101", # 例外のメッセージに文字列リテラルを許可
+    "EM102", # 例外のメッセージに f-string を許可
     "FIX002", # TODO がある
     "ERA001", # コメントアウトされたコード
+    "ICN001", # import の別名を強制しない
+    "TRY003", # 例外のメッセージを呼び出し側で指定することを許可
     "D1",    # docstring が存在しない
     "D203",  # docstring の前に空白行がない
     "D206", # docstring にタブによるインデントが使用されている
@@ -71,3 +105,13 @@ max-complexity = 30
 [tool.ruff.lint.pylint]
 max-args = 6
 max-branches = 30
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+	"ANN001", # テスト関数の引数に型注釈を要求しない
+	"ANN201", # テスト関数の戻り値に型注釈を要求しない
+	"ANN202", # テスト用ヘルパーの戻り値に型注釈を要求しない
+	"ARG001", # テスト用ハンドラの未使用引数を許可
+	"PLR2004", # テスト内のマジックナンバーを許可
+	"S101", # テスト内の assert を許可
+]
