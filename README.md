@@ -6,7 +6,7 @@
 ## 要件
 
 - Python 3.11 以上
-- `httpx`
+- `httpx2`
 - `datetimerange`
 
 ## インストール
@@ -48,13 +48,13 @@ for result in results:
 
 ### HTTP クライアントの指定
 
-タイムアウトやプロキシなどを変更したい場合は、`httpx.Client` を渡せます。
+タイムアウトやプロキシなどを変更したい場合は、`httpx2.Client` を渡せます。
 
 ```python
-import httpx
+import httpx2
 import r6sss
 
-with httpx.Client(timeout=10.0) as client:
+with httpx2.Client(timeout=10.0) as client:
 	statuses = r6sss.get_server_status(client=client)
 ```
 

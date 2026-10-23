@@ -1,4 +1,4 @@
-import httpx
+import httpx2
 
 from .exceptions import R6SSSAPIError, R6SSSRequestError, R6SSSResponseError
 from .types import MaintenanceSchedule, Platform, Status
@@ -11,17 +11,17 @@ _HTTP_NOT_FOUND = 404
 def _request(
 	path: str,
 	params: dict[str, list[str] | str] | None,
-	client: httpx.Client | None,
+	client: httpx2.Client | None,
 	timeout: float,
 	*,
 	allow_not_found: bool = False,
 ) -> dict | list | None:
 	"""GET リクエストを送り、レスポンスの data を返す"""
-	requester = client or httpx
+	requester = client or httpx2
 
 	try:
 		response = requester.get(_API_URL + path, params=params, timeout=timeout)
-	except httpx.HTTPError as exc:
+	except httpx2.HTTPError as exc:
 		raise R6SSSRequestError(str(exc)) from exc
 
 	try:
@@ -46,7 +46,7 @@ def _request(
 def get_server_status(
 	platforms: list[Platform] | None = None,
 	*,
-	client: httpx.Client | None = None,
+	client: httpx2.Client | None = None,
 ) -> list[Status]:
 	"""指定されたプラットフォームのサーバーステータスの一覧を取得して返す
 
@@ -72,7 +72,7 @@ def get_server_status(
 def get_maintenance_schedule(
 	language: str | None = None,
 	*,
-	client: httpx.Client | None = None,
+	client: httpx2.Client | None = None,
 ) -> MaintenanceSchedule | None:
 	"""直近のメンテナンスのスケジュール情報を取得して返す
 
@@ -92,7 +92,7 @@ def get_maintenance_schedule(
 def get_maintenance_schedule_list(
 	language: str | None = None,
 	*,
-	client: httpx.Client | None = None,
+	client: httpx2.Client | None = None,
 ) -> list[MaintenanceSchedule]:
 	"""全てのメンテナンスのスケジュール情報を取得して返す"""
 	params = {"lang": language} if language else {}

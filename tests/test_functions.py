@@ -1,4 +1,4 @@
-import httpx
+import httpx2
 import pytest
 
 from r6sss import (
@@ -54,7 +54,7 @@ SCHEDULE_DATA = {
 @pytest.fixture
 def client_factory():
 	def factory(handler):
-		return httpx.Client(transport=httpx.MockTransport(handler))
+		return httpx2.Client(transport=httpx2.MockTransport(handler))
 
 	return factory
 
@@ -62,7 +62,7 @@ def client_factory():
 def test_get_server_status(client_factory):
 	def handler(request):
 		assert request.url.params.get_list("platform") == ["PC", "XBSX"]
-		return httpx.Response(200, json={"data": STATUS_DATA})
+		return httpx2.Response(200, json={"data": STATUS_DATA})
 
 	statuses = get_server_status([Platform.PC, Platform.XBSX], client=client_factory(handler))
 
@@ -75,7 +75,7 @@ def test_get_server_status(client_factory):
 def test_get_server_status_without_platforms(client_factory):
 	def handler(request):
 		assert "platform" not in request.url.params
-		return httpx.Response(200, json={"data": {}})
+		return httpx2.Response(200, json={"data": {}})
 
 	assert get_server_status(client=client_factory(handler)) == []
 
@@ -89,7 +89,7 @@ def test_get_server_status_with_empty_platforms_does_not_request(client_factory)
 
 def test_get_server_status_raises_response_error_for_unknown_platform(client_factory):
 	def handler(request):
-		return httpx.Response(200, json={"data": {"PS6": STATUS_DATA["PC"]}})
+		return httpx2.Response(200, json={"data": {"PS6": STATUS_DATA["PC"]}})
 
 	with pytest.raises(R6SSSResponseError):
 		get_server_status(client=client_factory(handler))
@@ -97,7 +97,7 @@ def test_get_server_status_raises_response_error_for_unknown_platform(client_fac
 
 def test_get_server_status_raises_api_error(client_factory):
 	def handler(request):
-		return httpx.Response(503, json={"detail": "unavailable"})
+		return httpx2.Response(503, json={"detail": "unavailable"})
 
 	with pytest.raises(R6SSSAPIError) as exc_info:
 		get_server_status(client=client_factory(handler))
@@ -108,7 +108,7 @@ def test_get_server_status_raises_api_error(client_factory):
 
 def test_get_server_status_raises_request_error(client_factory):
 	def handler(request):
-		raise httpx.ConnectError("connection failed")
+		raise httpx2.ConnectError("connection failed")
 
 	with pytest.raises(R6SSSRequestError):
 		get_server_status(client=client_factory(handler))
@@ -116,7 +116,7 @@ def test_get_server_status_raises_request_error(client_factory):
 
 def test_get_server_status_raises_response_error_for_invalid_json(client_factory):
 	def handler(request):
-		return httpx.Response(200, text="not json")
+		return httpx2.Response(200, text="not json")
 
 	with pytest.raises(R6SSSResponseError):
 		get_server_status(client=client_factory(handler))
@@ -125,7 +125,7 @@ def test_get_server_status_raises_response_error_for_invalid_json(client_factory
 def test_get_maintenance_schedule(client_factory):
 	def handler(request):
 		assert request.url.params.get("lang") == "ja"
-		return httpx.Response(200, json={"data": SCHEDULE_DATA})
+		return httpx2.Response(200, json={"data": SCHEDULE_DATA})
 
 	schedule = get_maintenance_schedule("ja", client=client_factory(handler))
 
@@ -137,21 +137,21 @@ def test_get_maintenance_schedule(client_factory):
 
 def test_get_maintenance_schedule_without_schedule(client_factory):
 	def handler(request):
-		return httpx.Response(404, json={"detail": "No schedule information found.", "data": None})
+		return httpx2.Response(404, json={"detail": "No schedule information found.", "data": None})
 
 	assert get_maintenance_schedule(client=client_factory(handler)) is None
 
 
 def test_get_maintenance_schedule_with_empty_data(client_factory):
 	def handler(request):
-		return httpx.Response(200, json={"data": {}})
+		return httpx2.Response(200, json={"data": {}})
 
 	assert get_maintenance_schedule(client=client_factory(handler)) is None
 
 
 def test_get_maintenance_schedule_raises_api_error_for_other_404(client_factory):
 	def handler(request):
-		return httpx.Response(404, json={"detail": "Not Found"})
+		return httpx2.Response(404, json={"detail": "Not Found"})
 
 	with pytest.raises(R6SSSAPIError):
 		get_maintenance_schedule(client=client_factory(handler))
@@ -159,7 +159,7 @@ def test_get_maintenance_schedule_raises_api_error_for_other_404(client_factory)
 
 def test_get_maintenance_schedule_list(client_factory):
 	def handler(request):
-		return httpx.Response(200, json={"data": [SCHEDULE_DATA]})
+		return httpx2.Response(200, json={"data": [SCHEDULE_DATA]})
 
 	schedules = get_maintenance_schedule_list(client=client_factory(handler))
 
@@ -169,6 +169,6 @@ def test_get_maintenance_schedule_list(client_factory):
 
 def test_get_maintenance_schedule_list_without_schedule(client_factory):
 	def handler(request):
-		return httpx.Response(404, json={"detail": "No schedule information found.", "data": []})
+		return httpx2.Response(404, json={"detail": "No schedule information found.", "data": []})
 
 	assert get_maintenance_schedule_list(client=client_factory(handler)) == []
