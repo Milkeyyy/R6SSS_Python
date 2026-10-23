@@ -38,8 +38,8 @@ Issues = "https://github.com/Milkeyyy/R6SSS_Python/issues"
 
 [dependency-groups]
 dev = [
-	"pytest>=8.0",
-	"ruff>=0.8",
+	"pytest>=9.1.1",
+	"ruff>=0.17.1",
 ]
 
 [tool.uv]
