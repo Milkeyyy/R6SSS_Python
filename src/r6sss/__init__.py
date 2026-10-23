@@ -3,7 +3,7 @@ from .exceptions import R6SSSAPIError, R6SSSError, R6SSSRequestError, R6SSSRespo
 from .functions import get_maintenance_schedule, get_maintenance_schedule_list, get_server_status
 from .types import ComparisonDetail, ComparisonResult, MaintenanceSchedule, Platform, Status
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __all__ = [
 	"ComparisonDetail",
